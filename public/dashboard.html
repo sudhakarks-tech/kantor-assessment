@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Dashboard — Behavioral Assessment</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="dashboard-shell">
+
+  <header class="dash-header">
+    <div>
+      <h1>Team Behavioral Profiles</h1>
+      <p>Structural Dynamics Assessment — Organization View</p>
+    </div>
+    <a href="/" class="btn btn-secondary" style="color:#1E293B;font-size:14px;">
+      + New Assessment
+    </a>
+  </header>
+
+  <div class="dash-body">
+
+    <!-- Stats row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-label">Assessments Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statDominantAction">—</div>
+        <div class="stat-label">Most Common Action Mode</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statDominantOp">—</div>
+        <div class="stat-label">Most Common Operating Style</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statDominantComm">—</div>
+        <div class="stat-label">Most Common Communication Focus</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h2>All Team Members</h2>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by name or email…"
+            oninput="filterTable()"
+            style="padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:8px;font-size:14px;outline:none;width:220px;"
+          >
+          <select id="filterAction" onchange="filterTable()" style="padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:8px;font-size:14px;outline:none;background:white;">
+            <option value="">All Action Modes</option>
+            <option value="initiate">Initiate</option>
+            <option value="support">Support</option>
+            <option value="challenge">Challenge</option>
+            <option value="observe">Observe</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="tableContainer">
+        <div class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <p>Loading assessments…</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;overflow-y:auto;">
+  <div style="background:white;max-width:680px;margin:40px auto;border-radius:16px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.2);">
+    <div style="background:#1E40AF;color:white;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:13px;opacity:0.75;margin-bottom:4px;">Behavioral Profile</div>
+        <h2 id="modalName" style="font-size:22px;font-weight:700;"></h2>
+        <div id="modalProfile" style="font-size:15px;margin-top:6px;color:#93C5FD;font-weight:600;"></div>
+      </div>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+    <div style="padding:28px;" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+let allSessions = [];
+
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard');
+    allSessions = await res.json();
+    renderStats();
+    renderTable(allSessions);
+  } catch (err) {
+    document.getElementById('tableContainer').innerHTML =
+      `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Failed to load data: ${err.message}</p></div>`;
+  }
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = allSessions.length;
+
+  if (allSessions.length === 0) return;
+
+  const count = (field) => {
+    const tally = {};
+    allSessions.forEach(s => {
+      const v = s[field];
+      if (v && v !== '—') tally[v] = (tally[v] || 0) + 1;
+    });
+    return Object.entries(tally).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+  };
+
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
+  document.getElementById('statDominantAction').textContent = cap(count('action'));
+  document.getElementById('statDominantOp').textContent = cap(count('operating'));
+  document.getElementById('statDominantComm').textContent = cap(count('communication'));
+}
+
+function renderTable(sessions) {
+  if (sessions.length === 0) {
+    document.getElementById('tableContainer').innerHTML =
+      `<div class="empty-state"><div class="empty-icon">📋</div><p>No assessments completed yet. <a href="/" style="color:#1E40AF;">Start one now →</a></p></div>`;
+    return;
+  }
+
+  const rows = sessions.map(s => `
+    <tr>
+      <td>
+        <div style="font-weight:600;color:#1E293B;">${esc(s.name)}</div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:2px;">${esc(s.email)}</div>
+      </td>
+      <td>${formatDate(s.completedAt)}</td>
+      <td><span class="propensity-badge badge-${s.action}">${cap(s.action)}</span></td>
+      <td><span class="propensity-badge badge-${s.operating}">${cap(s.operating)}</span></td>
+      <td><span class="propensity-badge badge-${s.communication}">${cap(s.communication)}</span></td>
+      <td style="font-size:13px;color:#64748B;font-weight:500;">${esc(s.profileName)}</td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:13px;" onclick="openDetail('${s.id}')">View</button>
+          <a class="btn btn-secondary" style="padding:6px 12px;font-size:13px;" href="/api/report/${s.id}" target="_blank">PDF</a>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('tableContainer').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Completed</th>
+          <th>Action Mode</th>
+          <th>Operating Style</th>
+          <th>Communication</th>
+          <th>Full Profile</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const actionFilter = document.getElementById('filterAction').value;
+
+  const filtered = allSessions.filter(s => {
+    const matchSearch = !search ||
+      s.name.toLowerCase().includes(search) ||
+      s.email.toLowerCase().includes(search);
+    const matchAction = !actionFilter || s.action === actionFilter;
+    return matchSearch && matchAction;
+  });
+
+  renderTable(filtered);
+}
+
+async function openDetail(id) {
+  try {
+    const res = await fetch(`/api/session/${id}`);
+    const session = await res.json();
+    const s = session.scores;
+
+    document.getElementById('modalName').textContent = session.name;
+    document.getElementById('modalProfile').textContent = (s?.profileName || '').toUpperCase();
+
+    const body = document.getElementById('modalBody');
+    body.innerHTML = `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Completed</div>
+        <div style="font-weight:500;">${formatDate(session.completedAt)}</div>
+      </div>
+
+      ${renderMiniChart('Action Mode', s?.scores?.action?.calculated, {initiate:'#3B82F6',support:'#10B981',challenge:'#EF4444',observe:'#8B5CF6'})}
+      ${renderMiniChart('Operating Style', s?.scores?.operating?.calculated, {structured:'#6B7280',collaborative:'#3B82F6',creative:'#F59E0B'})}
+      ${renderMiniChart('Communication Focus', s?.scores?.communication?.calculated, {relational:'#EC4899',conceptual:'#6366F1',results:'#F97316'})}
+
+      ${s?.insights ? `
+        <div style="margin-top:20px;padding:16px;background:#F8FAFC;border-radius:10px;border:1px solid #E2E8F0;">
+          <div style="font-weight:600;margin-bottom:8px;color:#1E293B;">Key Talents</div>
+          ${(s.insights.talents || []).map(t => `<div style="font-size:14px;color:#374151;margin-bottom:4px;">• ${t}</div>`).join('')}
+        </div>
+        <div style="margin-top:12px;padding:16px;background:#FEF2F2;border-radius:10px;border:1px solid #FECACA;">
+          <div style="font-weight:600;margin-bottom:8px;color:#DC2626;">Traps to Watch</div>
+          ${(s.insights.traps || []).map(t => `<div style="font-size:14px;color:#374151;margin-bottom:4px;">• ${t}</div>`).join('')}
+        </div>
+        <div style="margin-top:12px;padding:16px;background:#EFF6FF;border-radius:10px;border:1px solid #BFDBFE;">
+          <div style="font-weight:600;margin-bottom:8px;color:#1D4ED8;">Tips for Growth</div>
+          ${(s.insights.tips || []).map(t => `<div style="font-size:14px;color:#374151;margin-bottom:4px;">• ${t}</div>`).join('')}
+        </div>
+      ` : ''}
+
+      <div style="margin-top:20px;text-align:right;">
+        <a href="/api/report/${id}" class="btn btn-primary" style="display:inline-flex;width:auto;" target="_blank">
+          ⬇ Download Full PDF
+        </a>
+      </div>
+    `;
+
+    document.getElementById('detailModal').style.display = 'block';
+  } catch (err) {
+    alert('Could not load details: ' + err.message);
+  }
+}
+
+function renderMiniChart(title, data, colors) {
+  if (!data) return '';
+  const total = Object.values(data).reduce((a, b) => a + b, 0) || 100;
+  const bars = Object.entries(data).map(([key, val]) => {
+    const w = (val / total) * 100;
+    return `<div style="flex:${w};background:${colors[key]||'#999'};min-width:${val > 0 ? 2 : 0}px;position:relative;">
+      ${w > 12 ? `<span style="position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:10px;color:white;white-space:nowrap;">${val}%</span>` : ''}
+    </div>`;
+  }).join('');
+
+  const legend = Object.entries(data).map(([key, val]) =>
+    `<span style="font-size:11px;color:#64748B;margin-right:12px;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${colors[key]||'#999'};margin-right:4px;vertical-align:middle;"></span>${cap(key)}: ${val}%</span>`
+  ).join('');
+
+  return `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748B;margin-bottom:6px;">${title}</div>
+      <div style="display:flex;height:24px;border-radius:6px;overflow:hidden;">${bars}</div>
+      <div style="margin-top:6px;">${legend}</div>
+    </div>
+  `;
+}
+
+function closeModal() {
+  document.getElementById('detailModal').style.display = 'none';
+}
+
+document.getElementById('detailModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('detailModal')) closeModal();
+});
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

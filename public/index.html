@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Behavioral Propensity Assessment</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="app-shell" id="appShell">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div>
+      <h1>Behavioral Propensity Assessment</h1>
+      <div class="subtitle">Structural Dynamics Framework</div>
+    </div>
+    <div class="progress-bar-wrap hidden" id="progressWrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </header>
+
+  <!-- Main content: screens swap here -->
+  <div class="main-content" id="mainContent">
+
+    <!-- ── Welcome Screen ─────────────────────────────── -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="logo-ring">🧭</div>
+      <h2>Understand Your Behavioral Style</h2>
+      <p>
+        This assessment helps you discover your natural behavioral tendencies
+        across three key dimensions: how you engage in conversations, the rules
+        you follow when interacting with others, and where you focus your attention.
+        It takes about 15–20 minutes.
+      </p>
+      <div class="form-card">
+        <label for="nameInput">Full Name</label>
+        <input type="text" id="nameInput" placeholder="Jane Smith" autocomplete="name">
+
+        <label for="emailInput">Work Email</label>
+        <input type="email" id="emailInput" placeholder="jane@company.com" autocomplete="email">
+
+        <button class="btn btn-primary" id="startBtn" onclick="startAssessment()">
+          Begin Assessment
+        </button>
+      </div>
+      <p class="text-muted" style="margin-top:20px;">
+        Your responses are confidential and used only for generating your profile.
+      </p>
+    </div>
+
+    <!-- ── Chat Screen ────────────────────────────────── -->
+    <div class="hidden" id="chatScreen" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="chat-area" id="chatArea"></div>
+      <div class="input-area" id="inputArea">
+        <textarea
+          id="userInput"
+          rows="1"
+          placeholder="Type your response here, or click an option above…"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Completion Screen ──────────────────────────── -->
+    <div class="completion-screen hidden" id="completionScreen">
+      <div class="checkmark">✓</div>
+      <h2>Assessment Complete</h2>
+      <div class="profile-badge" id="completionProfile">—</div>
+      <p id="completionDesc">
+        Your behavioral profile has been generated. Download your full report below,
+        which includes your propensity breakdown, insights, and development recommendations.
+      </p>
+      <div class="action-buttons">
+        <button class="btn btn-success" id="downloadBtn" onclick="downloadReport()">
+          ⬇ Download PDF Report
+        </button>
+        <button class="btn btn-secondary" onclick="startNew()">
+          Start Another Assessment
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
