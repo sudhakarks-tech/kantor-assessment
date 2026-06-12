@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Behavioral Propensity Assessment</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #EFF6FF 0%, #F1F5F9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+      padding: 48px 44px;
+      max-width: 520px;
+      width: 100%;
+    }
+
+    /* ─── Header ─────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo {
+      font-size: 44px;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 21px;
+      font-weight: 700;
+      color: #1E293B;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .header p {
+      font-size: 14px;
+      color: #64748B;
+      line-height: 1.6;
+    }
+
+    /* ─── Form ───────────────────────────────── */
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    input[type="text"], input[type="email"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #1E293B;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #FAFAFA;
+    }
+    input:focus {
+      border-color: #1E40AF;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(30,64,175,0.08);
+    }
+
+    /* ─── Buttons ────────────────────────────── */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #1E40AF;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 22px;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { background: #94A3B8; cursor: not-allowed; }
+
+    .btn-claude {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px;
+      background: #D97706;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn-claude:hover { background: #B45309; }
+    .btn-claude:active { transform: scale(0.99); }
+
+    /* ─── Success Badge ──────────────────────── */
+    .success-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #DCFCE7;
+      color: #15803D;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 20px;
+      margin-bottom: 22px;
+    }
+    .warn-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FEF9C3;
+      color: #92400E;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 20px;
+      margin-bottom: 22px;
+    }
+
+    /* ─── Steps ──────────────────────────────── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 12px 14px;
+      background: #F8FAFC;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+    }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      background: #1E40AF;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-num.done { background: #10B981; }
+    .step-content {}
+    .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 2px;
+    }
+    .step-desc {
+      font-size: 12.5px;
+      color: #64748B;
+      line-height: 1.45;
+    }
+    .step-desc kbd {
+      background: #E2E8F0;
+      color: #374151;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    /* ─── Copy again ─────────────────────────── */
+    .copy-again {
+      text-align: center;
+      margin-top: 14px;
+    }
+    .copy-link {
+      font-size: 13px;
+      color: #1E40AF;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    .copy-link:hover { color: #1D4ED8; }
+
+    /* ─── Notes ──────────────────────────────── */
+    .note {
+      font-size: 12px;
+      color: #94A3B8;
+      text-align: center;
+      margin-top: 16px;
+      line-height: 1.55;
+    }
+    .note a { color: #1E40AF; }
+
+    .back-btn {
+      display: block;
+      text-align: center;
+      font-size: 12.5px;
+      color: #94A3B8;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      margin-top: 14px;
+      font-family: inherit;
+      width: 100%;
+    }
+    .back-btn:hover { color: #64748B; }
+
+    /* ─── Divider ────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: #F1F5F9;
+      margin: 20px 0;
+    }
+
+    /* ─── Pills row ──────────────────────────── */
+    .pills {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .pill {
+      font-size: 12px;
+      color: #475569;
+      background: #F1F5F9;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 32px 20px; }
+      .header h1 { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ════════════════════════════════════════
+       SCREEN 1 — WELCOME
+  ════════════════════════════════════════ -->
+  <div id="screen-welcome">
+    <div class="header">
+      <div class="logo">🧭</div>
+      <h1>Behavioral Propensity Assessment</h1>
+      <p>Discover your natural behavioral tendencies across three key dimensions — how you act, how you operate, and where you focus.</p>
+    </div>
+
+    <div class="pills">
+      <span class="pill">⏱ 15–20 minutes</span>
+      <span class="pill">🔒 Runs in your Claude account</span>
+      <span class="pill">📄 PDF + JSON report</span>
+    </div>
+
+    <div class="form-group">
+      <label for="nameInput">Full Name</label>
+      <input type="text" id="nameInput" placeholder="Jane Smith" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="emailInput">Work Email</label>
+      <input type="email" id="emailInput" placeholder="jane@company.com" autocomplete="email">
+    </div>
+
+    <button class="btn-primary" id="generateBtn" onclick="generate()">
+      Generate My Assessment Prompt →
+    </button>
+
+    <p class="note">
+      The assessment runs entirely inside your own <a href="https://claude.ai" target="_blank">Claude.ai</a> account.
+      Your responses never touch our servers.
+    </p>
+  </div>
+
+
+  <!-- ════════════════════════════════════════
+       SCREEN 2 — LAUNCH
+  ════════════════════════════════════════ -->
+  <div id="screen-launch" style="display:none">
+    <div class="header">
+      <div class="logo">🚀</div>
+      <h1 id="launchTitle">Your Prompt Is Ready</h1>
+    </div>
+
+    <div id="copyBadge" class="success-badge">✓ Prompt copied to clipboard</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num done">✓</div>
+        <div class="step-content">
+          <div class="step-title">Prompt personalised &amp; copied</div>
+          <div class="step-desc">Your name and email are embedded so Claude won't ask for them.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Open Claude.ai and start a new chat</div>
+          <div class="step-desc">Click the button below. Log in if prompted. Use any free or paid account.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Paste and send the prompt</div>
+          <div class="step-desc">Click in the message box and press <kbd>⌘V</kbd> (Mac) or <kbd>Ctrl+V</kbd> (Windows), then hit Enter.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Answer Claude's questions honestly</div>
+          <div class="step-desc">~25–30 scenario questions across work and personal contexts. First instinct is best.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Download your report</div>
+          <div class="step-desc">Claude generates an interactive report. Use the buttons inside it to save your <strong>PDF</strong> and <strong>JSON</strong> files.</div>
+        </div>
+      </div>
+    </div>
+
+    <a href="https://claude.ai/new" target="_blank" class="btn-claude">
+      Open Claude.ai &nbsp;→
+    </a>
+
+    <div class="copy-again">
+      <button class="copy-link" id="copyAgainBtn" onclick="copyAgain()">
+        Prompt didn't copy? Click here to copy again
+      </button>
+    </div>
+
+    <p class="note">
+      You need a <a href="https://claude.ai" target="_blank">Claude.ai</a> account (free plan works).
+      The assessment uses Claude's <strong>Projects</strong> or standard chat — either works.
+    </p>
+
+    <div class="divider"></div>
+
+    <button class="back-btn" onclick="goBack()">← Start over with different details</button>
+  </div>
+
+</div><!-- /card -->
+
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+let cachedPrompt = '';
+
+/* ══════════════════════════════════════════════════════════════
+   ENTRY POINT
+══════════════════════════════════════════════════════════════ */
+function generate() {
+  const name  = document.getElementById('nameInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+
+  if (!name)  { alert('Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+
+  cachedPrompt = buildPrompt(name, email);
+
+  copyToClipboard(cachedPrompt).then(ok => {
+    showLaunch(ok);
+    btn.disabled = false;
+    btn.textContent = 'Generate My Assessment Prompt →';
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CLIPBOARD
+══════════════════════════════════════════════════════════════ */
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (_2) { return false; }
+  }
+}
+
+async function copyAgain() {
+  const ok = await copyToClipboard(cachedPrompt);
+  const btn = document.getElementById('copyAgainBtn');
+  const badge = document.getElementById('copyBadge');
+  if (ok) {
+    btn.textContent = '✓ Copied!';
+    badge.className = 'success-badge';
+    badge.textContent = '✓ Prompt copied to clipboard';
+    setTimeout(() => btn.textContent = "Prompt didn't copy? Click here to copy again", 2500);
+  } else {
+    btn.textContent = 'Auto-copy failed — see manual instructions below';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCREEN SWITCHING
+══════════════════════════════════════════════════════════════ */
+function showLaunch(copyOk) {
+  document.getElementById('screen-welcome').style.display = 'none';
+  document.getElementById('screen-launch').style.display  = 'block';
+  const badge = document.getElementById('copyBadge');
+  if (!copyOk) {
+    badge.className   = 'warn-badge';
+    badge.textContent = '⚠ Could not auto-copy — click "Copy again" below';
+  }
+}
+
+function goBack() {
+  document.getElementById('screen-launch').style.display  = 'none';
+  document.getElementById('screen-welcome').style.display = 'block';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROMPT BUILDER
+══════════════════════════════════════════════════════════════ */
+function buildPrompt(name, email) {
+  const firstName = name.split(' ')[0];
+
+  return `════════════════════════════════════════════════════════════════
+BEHAVIORAL PROPENSITY ASSESSMENT — INSTRUCTIONS FOR CLAUDE
+Read this entire prompt before responding. Do not skip ahead.
+════════════════════════════════════════════════════════════════
+
+ASSESSMENT CONTEXT — PRE-LOADED PARTICIPANT INFORMATION:
+Name:  ${name}
+Email: ${email}
+Their details are already captured. Do NOT ask for their name or email at any point.
+Address them as "${firstName}" throughout the entire assessment.
+
+════════════════════════════════════════════════════════════════
+
+You are an expert behavioral assessment facilitator trained in structural dynamics. Your task is to conduct a complete, adaptive behavioral propensity assessment with ${firstName}, then generate a full HTML report they can save as a PDF and download as JSON.
+
+Do not begin the assessment until you have read this entire prompt. When you are ready to start, greet ${firstName} warmly by name, briefly explain what the assessment covers and how long it takes (~15–20 minutes), and then begin Question 1 immediately — do not ask for their name.
+
+══════════════════════════════════════════════════════════════
+PART 1: THE BEHAVIORAL FRAMEWORK
+══════════════════════════════════════════════════════════════
+
+You are assessing behavioral tendencies across three independent dimensions. Each dimension has distinct sub-propensities. People naturally gravitate toward certain propensities and away from others — these tendencies become "hardwired" over time and shape how they engage with others in every interaction.
+
+────────────────────────────────────────────────────────────
+DIMENSION 1: ACTION MODE
+How a person typically engages in group conversations. Every conversation involves only four possible vocal actions — and individuals default to one or two far more than the others.
+
+• INITIATE — Proposes new directions; introduces ideas first; sets the agenda; pushes for forward momentum. The initiator gets things started. Without initiators, groups stall.
+
+• SUPPORT — Gets behind others' ideas; helps carry proposals to completion; enables what's been started. The supporter finishes things. Without supporters, ideas die before they can be implemented.
+
+• CHALLENGE — Questions assumptions; pushes back on proposals; surfaces weaknesses; offers counter-arguments and alternatives. The challenger corrects direction. Without challengers, groups rush toward bad decisions.
+
+• OBSERVE — Steps back from the action; watches the dynamics; synthesizes disparate views; offers neutral perspective; bridges gaps. The observer connects the dots. Without observers, groups lose sight of the bigger picture.
+
+────────────────────────────────────────────────────────────
+DIMENSION 2: OPERATING STYLE
+The implicit rules a person follows when engaging with others. These rules determine what a person believes is the "right" way to work together, make decisions, and organize effort.
+
+• STRUCTURED — Values hierarchy, clear roles, defined processes, rules, and tradition. Provides clarity about responsibilities. Expects everyone to know and follow the agreed system. Finds comfort in order and predictability.
+
+• COLLABORATIVE — Values consensus, participation, and inclusion. Looks for ways to involve everyone and ensure all voices are heard. Places a high value on shared agreement. Believes the best decisions emerge from dialogue.
+
+• CREATIVE — Values autonomy, experimentation, and individuality. Operates with minimal rules and few rigid boundaries. Emphasizes personal freedom and creative expression. Resists being told how to work.
+
+────────────────────────────────────────────────────────────
+DIMENSION 3: COMMUNICATION FOCUS
+What a person naturally pays attention to in conversations. This shapes both what they notice and the language they use — people with different Communication Focuses can feel like they are speaking different languages, even when discussing the same topic.
+
+• RELATIONAL — Focuses on emotional connection, trust, wellbeing, and the relationships between people. Takes special note of how others are feeling. Speaks the language of care, empathy, and human impact.
+
+• CONCEPTUAL — Focuses on ideas, logic, meaning, and purpose. Loves understanding how things work at a deep level. Interested in "what does this mean?" and "what do we stand for?" Speaks the language of thinking.
+
+• RESULTS-DRIVEN — Focuses on outcomes, accountability, timelines, and completion. Oriented toward goals and getting things done. Speaks the language of action: who, what, when, and how much.
+
+══════════════════════════════════════════════════════════════
+PART 2: ASSESSMENT METHODOLOGY
+══════════════════════════════════════════════════════════════
+
+STRUCTURE:
+The assessment has three phases totaling 25–30 questions:
+
+Phase 1 — WORK CONTEXT (approximately 14 questions)
+Scenario-based questions set in professional and team situations. Cover: team meetings, decision-making, conflict, project planning, receiving critical feedback, high-stakes moments, working under pressure, and how they show up as a leader or contributor.
+
+Phase 2 — PERSONAL CONTEXT (approximately 10 questions)
+Same approach but set in family, relationships, and personal life. Cover: family planning and decisions, relationship conflict, social gatherings, personal decisions under pressure, how they show up in close relationships.
+
+Phase 3 — SELF-REPORT (approximately 5–6 questions)
+Ask the person to directly estimate the percentage of time they spend in each mode. These become the "self-reported" scores, which you compare against the "calculated" scores from Phases 1 and 2. Ask these AFTER question 18 — never at the start.
+
+QUESTION DESIGN:
+Every scenario question must:
+- Present a specific, realistic situation (not a vague generality)
+- Offer 3–4 behaviorally distinct response options labeled A, B, C, D
+- Never have an obviously "correct" answer — all options should be defensible
+- Never label the options with dimension names (never say "this is an Initiate response")
+- Cover a genuine behavioral choice a person would actually face
+
+CONDUCT RULES:
+1. Ask ONE question at a time. Never combine two questions.
+2. Number every question: Q1, Q2, Q3, etc.
+3. After each response, briefly acknowledge it in ONE neutral sentence before proceeding. Never praise a response or hint at what it reveals.
+4. Maintain a warm, curious, professionally empathetic tone throughout.
+5. When asking self-report percentage questions, remind the person the numbers must add up to 100.
+6. Do not reveal scores, propensity labels, or any interpretation until the very end.
+
+══════════════════════════════════════════════════════════════
+PART 3: SCORING (TRACK INTERNALLY — NEVER REVEAL MID-ASSESSMENT)
+══════════════════════════════════════════════════════════════
+
+Maintain a running internal score throughout the conversation. The person will never see this.
+
+SCORING PER QUESTION:
+For Action Mode scenario questions:
+  - The response option that reflects Initiate → add 3 pts to Initiate
+  - The response option that reflects Support → add 3 pts to Support
+  - The response option that reflects Challenge → add 3 pts to Challenge
+  - The response option that reflects Observe → add 3 pts to Observe
+  - If an option spans two propensities (genuinely ambiguous), split: 2 pts to primary, 1 pt to secondary
+
+For Operating Style scenario questions:
+  - Structured option → add 3 pts to Structured
+  - Collaborative option → add 3 pts to Collaborative
+  - Creative option → add 3 pts to Creative
+
+For Communication Focus scenario questions:
+  - Relational option → add 3 pts to Relational
+  - Conceptual option → add 3 pts to Conceptual
+  - Results-Driven option → add 3 pts to Results-Driven
+
+TRACK SEPARATELY:
+  - Work-context scores (Phase 1 questions only) → used for "Work Profile"
+  - Personal-context scores (Phase 2 questions only) → used for "Personal Profile"
+  - Overall calculated scores (all scenario questions combined) → used for "Baseline Profile"
+  - Self-reported scores (Phase 3 direct rating questions) → used for comparison
+
+NORMALIZE: At the end, convert all scores to percentages within each dimension (sum must equal 100%).
+
+ZONE CLASSIFICATION: After normalizing, classify each propensity:
+  - Weak: below 20% → rarely used, may be uncomfortable or even repulsive
+  - Strong: 20–39% → a reliable, available propensity
+  - Overuse: 40–50% → a dominant propensity that may be over-relied upon
+  - Stuck: above 50% → so dominant that others expect and may discount it
+
+DOMINANT PROFILE: Identify the highest-scoring propensity in each dimension. Combine them into the profile name in this format: "[Action] in [Operating] [Communication]" — for example: "Challenge in Collaborative Conceptual"
+
+══════════════════════════════════════════════════════════════
+PART 4: DYNAMIC BRANCHING RULES
+══════════════════════════════════════════════════════════════
+
+After completing Q6–8 (work context), review your running scores and apply these branching rules:
+
+RULE 1 — CONFIRM A DOMINANT SIGNAL: If one Action Mode propensity is already above 40% of your running total after Q6–8, include a high-stakes work scenario to test whether this pattern holds under pressure (e.g., a crisis situation, a public disagreement with a superior, a moment of conflict with a peer who has more authority).
+
+RULE 2 — BREAK A TIE IN OPERATING STYLE: If Structured and Creative are within 5 points of each other after Q8–10, ask a scenario where these two styles would clash most sharply — for example, a team that is ignoring an agreed process in pursuit of a creative solution.
+
+RULE 3 — PROBE CONTEXT-SWITCHING: If by Q15, the work Operating Style and personal Operating Style signals diverge significantly (e.g., Structured at work vs. Creative at home), ask a direct question: "You seem to operate quite differently in your personal life versus your professional environment — how would you explain that difference?"
+
+RULE 4 — CONFIRM AN ABSENT PROPENSITY: If any single propensity has received zero or near-zero points after 8+ questions, include a question that gives it a genuine opening. If it still scores near zero, that confirms it as a "stuck" absence. This is important data.
+
+RULE 5 — CLARIFY CONTRADICTIONS: If two responses appear contradictory (e.g., the person selected a Collaborative response in Q4 but a Structured response that explicitly rejects consensus in Q9), ask a brief clarifying question before continuing.
+
+══════════════════════════════════════════════════════════════
+PART 5: EXAMPLE QUESTION STYLES
+(Use these as calibration — generate your own, do not copy verbatim)
+══════════════════════════════════════════════════════════════
+
+WORK / ACTION MODE:
+"Q3. Your team has been debating a key decision for over an hour without reaching resolution. What do you most naturally find yourself doing?
+A. Stepping in to name a specific direction and pushing the group to commit to it
+B. Identifying which proposed option has the most support and helping the group rally behind it
+C. Laying out clearly why the options on the table won't work and what's being missed
+D. Stepping back to observe what's happening in the room and helping the group see its own dynamic"
+
+WORK / OPERATING STYLE:
+"Q7. A colleague you respect consistently bypasses the agreed team process, improvising their own approach because they think it produces better results. How do you respond?
+A. Address it directly — agreed processes exist for a reason and need to be followed consistently
+B. Have a conversation to understand their perspective and look for common ground that respects both the process and their instincts
+C. Appreciate the creative energy; the best approach often emerges from individuals following their instincts rather than rigid protocols"
+
+WORK / HIGH STAKES (branching):
+"Q11. Your organisation is in crisis — a major project has failed publicly and leadership is under pressure to act fast. What do you notice yourself doing?
+A. Immediately forming a clear view on what needs to happen and driving hard toward that position
+B. Making sure the people most affected are being heard and looked after before decisions are made
+C. Scrutinising what went wrong and pushing back hard on any proposed fix that doesn't address the root cause
+D. Watching the dynamics carefully — noting who is being listened to, who isn't, and what that tells you about the real problem"
+
+PERSONAL / COMMUNICATION FOCUS:
+"Q22. After a difficult conversation with someone close to you, what tends to stay with you longest?
+A. Whether they seemed okay and whether the relationship feels intact
+B. Whether you really understood each other and what the conversation actually meant
+C. Whether anything concrete was decided or resolved as a result"
+
+SELF-REPORT:
+"Q25. Now I'd like you to step back and estimate your own behavior. Think about your typical work conversations over the past year. Roughly what percentage of the time would you say you spend in each of the following modes? Please give me four numbers that add up to 100:
+- Starting or proposing new directions: ___%
+- Supporting and advancing others' ideas: ___%
+- Questioning and pushing back on proposals: ___%
+- Observing and synthesising: ___%"
+
+══════════════════════════════════════════════════════════════
+PART 6: GENERATING THE FINAL REPORT
+══════════════════════════════════════════════════════════════
+
+When you have completed approximately 25–30 questions and gathered sufficient data:
+
+STEP 1: Write a warm 2–3 sentence closing statement thanking ${firstName} and telling them their report is being generated.
+
+STEP 2: Generate the complete report as a Claude HTML artifact — NOT as a code block. Output it using the artifact format so it renders as a live, interactive page.
+
+CRITICAL REQUIREMENTS FOR THE HTML ARTIFACT:
+
+A. ACTION BAR (sticky, at the very top of the <body>):
+Include three buttons in a sticky bar:
+
+  Button 1 — "⬇ Save HTML File":
+    function saveHtmlFile() {
+      const name = document.getElementById('person-name').textContent || 'profile';
+      const filename = 'behavioral-profile-' + name.toLowerCase().replace(/\\s+/g, '-') + '.html';
+      const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+  Button 2 — "🖨 Print / Save as PDF": calls window.print()
+
+  Button 3 — "⬇ Download JSON":
+    function downloadJson() {
+      const data = window.__PROFILE_DATA__;
+      if (!data) return;
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'behavioral-profile-' + (data.name || 'profile').toLowerCase().replace(/\\s+/g, '-') + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+  Style the action bar: position sticky; top 0; z-index 999; dark background (#1E293B); white text; all three buttons clearly visible; hidden on print (@media print { .action-bar { display:none!important; } }).
+
+B. PROFILE DATA (embed at the top of the <script> tag, FULLY POPULATED with actual scores):
+
+  window.__PROFILE_DATA__ = {
+    "name": "${name}",
+    "email": "${email}",
+    "completedAt": "[TODAY DATE YYYY-MM-DD]",
+    "profileName": "[DOMINANT ACTION] in [DOMINANT OPERATING] [DOMINANT COMMUNICATION]",
+    "dimensions": {
+      "action": {
+        "dominant": "[dominant in lowercase, e.g. challenge]",
+        "calculated": { "initiate": [%], "support": [%], "challenge": [%], "observe": [%] },
+        "selfReported": { "initiate": [%], "support": [%], "challenge": [%], "observe": [%] }
+      },
+      "operating": {
+        "dominant": "[dominant in lowercase]",
+        "calculated": { "structured": [%], "collaborative": [%], "creative": [%] },
+        "selfReported": { "structured": [%], "collaborative": [%], "creative": [%] }
+      },
+      "communication": {
+        "dominant": "[dominant in lowercase]",
+        "calculated": { "relational": [%], "conceptual": [%], "resultsDriven": [%] },
+        "selfReported": { "relational": [%], "conceptual": [%], "resultsDriven": [%] }
+      }
+    },
+    "insights": {
+      "talents": ["[talent 1]", "[talent 2]", "[talent 3]"],
+      "traps": ["[trap 1]", "[trap 2]", "[trap 3]"],
+      "tips": ["[tip 1]", "[tip 2]", "[tip 3]"]
+    },
+    "unstuckZones": {
+      "action": { "initiate": "[weak|strong|overuse|stuck]", "support": "[...]", "challenge": "[...]", "observe": "[...]" },
+      "operating": { "structured": "[...]", "collaborative": "[...]", "creative": "[...]" },
+      "communication": { "relational": "[...]", "conceptual": "[...]", "resultsDriven": "[...]" }
+    },
+    "contexts": {
+      "work": {
+        "profileName": "[work profile]",
+        "action": { "initiate": [%], "support": [%], "challenge": [%], "observe": [%] },
+        "operating": { "structured": [%], "collaborative": [%], "creative": [%] },
+        "communication": { "relational": [%], "conceptual": [%], "resultsDriven": [%] }
+      },
+      "personal": {
+        "profileName": "[personal profile]",
+        "action": { "initiate": [%], "support": [%], "challenge": [%], "observe": [%] },
+        "operating": { "structured": [%], "collaborative": [%], "creative": [%] },
+        "communication": { "relational": [%], "conceptual": [%], "resultsDriven": [%] }
+      }
+    }
+  };
+
+C. REPORT PAGES (seven pages, all in the same HTML artifact):
+
+Page 1 — Cover
+- Person's name (id="person-name") and date
+- Title: "Behavioral Propensity Profile" / Subtitle: "Structural Dynamics Assessment"
+- Profile name in a strong accent color
+- Brief paragraph on what the report contains
+
+Page 2 — Action Mode
+- Dominant Action propensity described in 2–3 sentences
+- CSS stacked horizontal bar: calculated scores for Initiate / Support / Challenge / Observe
+- Second bar: self-reported scores
+- "To Consider" reflection on the calculated vs. self-reported gap
+
+Page 3 — Operating Style
+- Dominant Operating propensity described in 2–3 sentences
+- Calculated bar (Structured / Collaborative / Creative) + self-reported bar
+- "To Consider" reflection
+
+Page 4 — Communication Focus
+- Dominant Communication propensity described in 2–3 sentences
+- Calculated bar (Relational / Conceptual / Results-Driven) + self-reported bar
+- "To Consider" reflection
+
+Page 5 — Behavioral Profile
+- Profile name large and prominent
+- Three columns: Talents | Traps | Tips for Growth (3 each, specific to this exact profile combination)
+
+Page 6 — Getting Unstuck
+- Explain the zone system (Weak / Strong / Overuse / Stuck)
+- Three bar charts with color-coded zone indicators: Weak=grey, Strong=blue, Overuse=amber, Stuck=red
+- Short paragraph on development opportunities for this specific pattern
+
+Page 7 — Work vs. Personal Profile
+- Side-by-side stacked bars for each dimension in both contexts
+- Paragraph interpreting differences (or similarities)
+
+D. CSS REQUIREMENTS:
+- Clean sans-serif font (system-ui or -apple-system)
+- White background; dark slate text
+- Color palette:
+    Initiate: #3B82F6  |  Support: #10B981  |  Challenge: #EF4444  |  Observe: #8B5CF6
+    Structured: #6B7280  |  Collaborative: #3B82F6  |  Creative: #F59E0B
+    Relational: #EC4899  |  Conceptual: #6366F1  |  Results-Driven: #F97316
+    Weak zone: #D1D5DB  |  Strong zone: #3B82F6  |  Overuse zone: #F59E0B  |  Stuck zone: #EF4444
+- All CSS in a <style> tag; all JS in a <script> tag; no external dependencies
+- @media print: hide .action-bar; set margins 15mm; page-break-before: always on each section
+
+STEP 3: After the artifact, add plain text outside it:
+---
+Your report is ready above. To save it:
+• Click "⬇ Save HTML File" to download the full interactive report.
+• Click "🖨 Print / Save as PDF" to export a print-quality PDF.
+• Click "⬇ Download JSON" to get your machine-readable profile data to share with your organisation.
+---
+
+══════════════════════════════════════════════════════════════
+PART 7: QUALITY STANDARDS
+══════════════════════════════════════════════════════════════
+
+QUESTION QUALITY:
+✓ Each scenario must be specific and grounded — avoid vague situations like "in a general meeting"
+✓ Options must be genuinely distinct — a person should have to think before choosing
+✓ No option should feel like the "leader" or "good person" choice
+✓ Work questions should feel like situations the person has actually lived
+✓ Personal questions should feel intimate and revealing, not abstract
+
+SCORING INTEGRITY:
+✓ Score what the person chose, not what you think they "meant"
+✓ Do not adjust scores based on how articulate or self-aware the person seems
+✓ If a person's free-text answer doesn't clearly map to any option, ask a brief follow-up before scoring
+✓ Track work and personal scores separately throughout — do not mix them
+
+REPORT QUALITY:
+✓ Talents, Traps, and Tips must be specific to the exact profile combination — not generic personality insights
+✓ The gap analysis (calculated vs. self-reported) must be interpreted, not just reported
+✓ The Work vs. Personal section must note whether the shift is significant and what it might mean
+✓ Every insight in the report should feel like it was written for this specific person, not a template
+
+════════════════════════════════════════════════════════════════
+YOU ARE NOW READY TO BEGIN.
+════════════════════════════════════════════════════════════════
+
+Greet ${firstName} warmly by name. Briefly explain:
+- What the assessment measures (three behavioral dimensions)
+- How it works (scenario questions, about 15–20 minutes, honest instinctive responses work best)
+- What they will receive at the end (a detailed personal report with PDF, HTML, and JSON downloads)
+
+Begin Question 1 immediately after the introduction. Do NOT ask for their name.`;
+}
+</script>
+
+</body>
+</html>
